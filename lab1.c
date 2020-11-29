@@ -74,7 +74,7 @@ int receive_messages(MessageType msg_type, local_id proc_numb, int*** matrix, in
 		// if(receive(selfStruct, i + 1, msg) == -1){
 		// 	return -1;
 		// }
-		if(!msg->s_header.s_type == msg_type){
+		if(msg->s_header.s_type != msg_type){
 			return -1;
 		}
 		// set_time(msg->s_header.s_local_time);

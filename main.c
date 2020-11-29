@@ -14,6 +14,7 @@
 #include "lab1.h"
 #include "lab2.h"
 #include "lab4.h"
+#include "lab6.h"
 #include "banking.h"
 #include "priority_queue.h"
 
@@ -29,7 +30,7 @@ int main(int argc, char** argv){
 	// AllHistory* allHistory;
 	BalanceState* balanceState = (BalanceState*)malloc(sizeof(BalanceState));
 	timestamp_t time;
-	
+	struct philosoph_proc philosoph;
 
 	if((log_fd = open(events_log, O_WRONLY|O_CREAT|O_TRUNC)) == -1){
 		printf("Error: cannot open file %s.\n", events_log);
@@ -41,6 +42,9 @@ int main(int argc, char** argv){
 
 	opts=get_arg(argc,argv);
 	N=opts->N;
+	philosoph.forks = calloc(N, sizeof(int));
+	philosoph.dirty = calloc(N, sizeof(int));
+	philosoph.reqf = calloc(N, sizeof(int));
 
 	fd_matrix = create_matrix(N);
 	if(fill_matrix(fd_matrix, N) == -1){
@@ -54,8 +58,9 @@ int main(int argc, char** argv){
 				exit(1);
 			case 0:
 				local_proc_id = i + 1;
+				initialize_arrays(&philosoph, N, local_proc_id);
+				
 				balance = opts->values[i];
-
 				balanceState -> s_balance = balance;
 				time = get_lamport_time();
 				balanceState -> s_time = time;
@@ -69,7 +74,7 @@ int main(int argc, char** argv){
 				receive_messages(STARTED, local_proc_id, fd_matrix, N, log_fd);
 
 				if(opts->mutexl == 1){
-					do_prints_mutexl(fd_matrix, local_proc_id, N, log_fd);
+					do_prints_mutexl_philosoph(fd_matrix, local_proc_id, N, log_fd, &philosoph);
 				}else{
 					do_prints(local_proc_id, N);
 				}
